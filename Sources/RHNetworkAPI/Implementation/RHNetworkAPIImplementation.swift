@@ -13,8 +13,10 @@ enum RequestError: Error {
 
 class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
     let domain: URL
-    init(domain: URL) {
+    let client: HTTPClient
+    init(domain: URL, client: HTTPClient=URLSessionHTTPClient()) {
         self.domain = domain
+        self.client = client
     }
     
     private struct Request: RequestType {
@@ -34,7 +36,6 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
     
     func get(path: String, completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
         let request = Request(baseURL: domain, path: path, method: .get)
-        let client = URLSessionHTTPClient()
         client.request(with: request, completion: completion)
     }
     
@@ -42,7 +43,6 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
         do {
             let data = (body != nil) ? try JSONSerialization.data(withJSONObject: body!, options: []) : nil
             let request = Request(baseURL: domain, path: path, method: .post, body: data)
-            let client = URLSessionHTTPClient()
             client.request(with: request, completion: completion)
         } catch {
             throw RequestError.failedToTransferJsonToData
