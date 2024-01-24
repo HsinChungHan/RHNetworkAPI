@@ -11,83 +11,35 @@ import XCTest
 
 class RHNetworkAPIImplementationTests: XCTestCase {
     func test_get_onSuccessfulResult() {
-        let anyData = anyData
-        let anyHttpURLResponse = anyHttpURLResponse
         let (sut, client) = makeSUT()
-        let exp = expectation(description: "Wait for completion ...")
         let expectedResult = HTTPClientResult.success(anyData, anyHttpURLResponse)
-        sut.get(path: anyPath) { result in
-            switch (result, expectedResult) {
-            case let (.success(data, response), .success(expectedData, expectedResponse)):
-                XCTAssertEqual(data, expectedData)
-                XCTAssertEqual(response.statusCode, expectedResponse.statusCode)
-                XCTAssertEqual(response.url, expectedResponse.url)
-            default:
-                XCTFail("Expected result \(expectedResult) got \(result) insteasd")
-            }
-            exp.fulfill()
+        expectGet(sut, client: client, toCompleteWithResult: expectedResult) {
+            client.complete(with: anyHttpURLResponse.statusCode, data: anyData)
         }
-        XCTAssertEqual(client.messages[0].request.method, .get)
-        client.complete(with: anyHttpURLResponse.statusCode, data: anyData)
-        wait(for: [exp], timeout: 1.0)
     }
     
     func test_post_onSuccessfulResult() {
-        let anyData = anyData
-        let anyHttpURLResponse = anyHttpURLResponse
         let (sut, client) = makeSUT()
-        let exp = expectation(description: "Wait for completion ...")
         let expectedResult = HTTPClientResult.success(anyData, anyHttpURLResponse)
-        sut.post(path: anyPath, body: nil) { result in
-            switch (result, expectedResult) {
-            case let (.success(data, response), .success(expectedData, expectedResponse)):
-                XCTAssertEqual(data, expectedData)
-                XCTAssertEqual(response.statusCode, expectedResponse.statusCode)
-                XCTAssertEqual(response.url, expectedResponse.url)
-            default:
-                XCTFail("Expected result \(expectedResult) got \(result) insteasd")
-            }
-            exp.fulfill()
+        expectPost(sut, client: client, toCompleteWithResult: expectedResult) {
+            client.complete(with: anyHttpURLResponse.statusCode, data: anyData)
         }
-        XCTAssertEqual(client.messages[0].request.method, .post)
-        client.complete(with: anyHttpURLResponse.statusCode, data: anyData)
-        wait(for: [exp], timeout: 1.0)
     }
     
     func test_get_onFailureWithResponseErrorResult() {
         let (sut, client) = makeSUT()
-        let exp = expectation(description: "Wait for completion ...")
         let expectedResult = HTTPClientResult.failure(.responseError)
-        sut.get(path: anyPath) { result in
-            switch (result, expectedResult) {
-            case let (.failure(error), .failure(expectedErrot)):
-                XCTAssertEqual(error, expectedErrot)
-            default:
-                XCTFail("Expected result \(expectedResult) got \(result) insteasd")
-            }
-            exp.fulfill()
+        expectGet(sut, client: client, toCompleteWithResult: expectedResult) {
+            client.complete(with: .responseError)
         }
-        XCTAssertEqual(client.messages[0].request.method, .get)
-        client.complete(with: .responseError)
-        wait(for: [exp], timeout: 1.0)
     }
     
     func test_post_onFailureWithResponseErrorResult() {
         let (sut, client) = makeSUT()
-        let exp = expectation(description: "Wait for completion ...")
         let expectedResult = HTTPClientResult.failure(.responseError)
-        sut.post(path: anyPath, body: nil) { result in
-            switch (result, expectedResult) {
-            case let (.failure(error), .failure(expectedErrot)):
-                XCTAssertEqual(error, expectedErrot)
-            default:
-                XCTFail("Expected result \(expectedResult) got \(result) insteasd")
-            }
-            exp.fulfill()
+        expectPost(sut, client: client, toCompleteWithResult: expectedResult) {
+            client.complete(with: .responseError)
         }
-        XCTAssertEqual(client.messages[0].request.method, .post)
-        client.complete(with: .responseError)
-        wait(for: [exp], timeout: 1.0)
     }
 }
 
@@ -122,5 +74,47 @@ private extension RHNetworkAPIImplementationTests {
         let clientSpy = HTTPClientSpy()
         let sut = RHNetworkAPIImplementation.init(domain: anyURL, client: clientSpy)
         return (sut, clientSpy)
+    }
+}
+
+private extension RHNetworkAPIImplementationTests {
+    func expectGet(_ sut: RHNetworkAPIImplementation, client: HTTPClientSpy, toCompleteWithResult expectedResult: HTTPClientResult, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+        let exp = expectation(description: "Wait for completion ...")
+        sut.get(path: anyPath) { result in
+            switch (result, expectedResult) {
+            case let (.success(data, response), .success(expectedData, expectedResponse)):
+                XCTAssertEqual(data, expectedData)
+                XCTAssertEqual(response.statusCode, expectedResponse.statusCode)
+                XCTAssertEqual(response.url, expectedResponse.url)
+            case let (.failure(error), .failure(expectedError)):
+                XCTAssertEqual(error, expectedError)
+            default:
+                XCTFail("Expected result \(expectedResult) got \(result) insteasd")
+            }
+            exp.fulfill()
+        }
+        XCTAssertEqual(client.messages[0].request.method, .get)
+        action()
+        wait(for: [exp], timeout: 1.0)
+    }
+    
+    func expectPost(_ sut: RHNetworkAPIImplementation, client: HTTPClientSpy, toCompleteWithResult expectedResult: HTTPClientResult, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+        let exp = expectation(description: "Wait for completion ...")
+        sut.post(path: anyPath, body: nil) { result in
+            switch (result, expectedResult) {
+            case let (.success(data, response), .success(expectedData, expectedResponse)):
+                XCTAssertEqual(data, expectedData)
+                XCTAssertEqual(response.statusCode, expectedResponse.statusCode)
+                XCTAssertEqual(response.url, expectedResponse.url)
+            case let (.failure(error), .failure(expectedError)):
+                XCTAssertEqual(error, expectedError)
+            default:
+                XCTFail("Expected result \(expectedResult) got \(result) insteasd")
+            }
+            exp.fulfill()
+        }
+        XCTAssertEqual(client.messages[0].request.method, .post)
+        action()
+        wait(for: [exp], timeout: 1.0)
     }
 }
