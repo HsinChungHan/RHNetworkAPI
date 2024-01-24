@@ -39,13 +39,17 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
         client.request(with: request, completion: completion)
     }
     
-    func post(path: String, body: [String: String]?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void) throws {
-        do {
-            let data = (body != nil) ? try JSONSerialization.data(withJSONObject: body!, options: []) : nil
-            let request = Request(baseURL: domain, path: path, method: .post, body: data)
-            client.request(with: request, completion: completion)
-        } catch {
-            throw RequestError.failedToTransferJsonToData
+    func post(path: String, body: [String: String]?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
+        var request: RequestType
+        if body != nil {
+            guard let data = try? JSONSerialization.data(withJSONObject: body!, options: []) else {
+                completion(.failure(.jsonToDataError))
+                return
+            }
+            request = Request(baseURL: domain, path: path, method: .post, body: data)
+        } else {
+            request = Request(baseURL: domain, path: path, method: .post, body: nil)
         }
+        client.request(with: request, completion: completion)
     }
 }
