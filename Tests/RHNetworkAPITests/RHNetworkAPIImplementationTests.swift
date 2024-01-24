@@ -53,6 +53,44 @@ class RHNetworkAPIImplementationTests: XCTestCase {
         client.complete(with: anyHttpURLResponse.statusCode, data: anyData)
         wait(for: [exp], timeout: 1.0)
     }
+    
+    func test_get_onFailureWithResponseErrorResult() {
+        let (sut, client) = makeSUT()
+        let exp = expectation(description: "Wait for completion ...")
+        let expectedResult = HTTPClientResult.failure(.responseError)
+        sut.get(path: anyPath) { result in
+            switch (result, expectedResult) {
+            case let (.failure(error), .failure(expectedErrot)):
+                XCTAssertEqual(error, expectedErrot)
+            default:
+                XCTFail("Expected result \(expectedResult) got \(result) insteasd")
+            }
+            exp.fulfill()
+        }
+        XCTAssertEqual(client.messages[0].request.method, .get)
+        client.complete(with: .responseError)
+        wait(for: [exp], timeout: 1.0)
+    }
+    
+    func test_post_onFailureWithResponseErrorResult() {
+        let (sut, client) = makeSUT()
+        let exp = expectation(description: "Wait for completion ...")
+        let expectedResult = HTTPClientResult.failure(.responseError)
+        sut.post(path: anyPath, body: nil) { result in
+            switch (result, expectedResult) {
+            case let (.failure(error), .failure(expectedErrot)):
+                XCTAssertEqual(error, expectedErrot)
+            default:
+                XCTFail("Expected result \(expectedResult) got \(result) insteasd")
+            }
+            exp.fulfill()
+        }
+        XCTAssertEqual(client.messages[0].request.method, .post)
+        client.complete(with: .responseError)
+        wait(for: [exp], timeout: 1.0)
+    }
+}
+
 private extension RHNetworkAPIImplementationTests {
     var anyData: Data { .init("any data".utf8) }
     var anyURL: URL { .init(string: "http://any-url.com")! }
