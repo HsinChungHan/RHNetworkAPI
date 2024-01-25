@@ -7,6 +7,7 @@
 
 import Foundation
 public struct RHNetworkAPIImplementationFactory: RHNetworkAPIImplementationFactoryProtocol {
+    public init() {}
     public func makeRHNetworkAPI(with domain: URL) -> RHNetworkAPIProtocol {
         return RHNetworkAPIImplementation(domain: domain)
     }
