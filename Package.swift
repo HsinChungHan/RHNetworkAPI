@@ -26,5 +26,8 @@ let package = Package(
         .testTarget(
             name: "RHNetworkAPITests",
             dependencies: ["RHNetworkAPI"]),
+        .testTarget(
+            name: "RHNetworkAPITests_EndToEndTests",
+            dependencies: ["RHNetworkAPI"]),
     ]
 )
