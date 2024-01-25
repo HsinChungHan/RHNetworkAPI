@@ -25,7 +25,7 @@ class RHNetworkAPITests_EndToEndTests: XCTestCase {
 // MARK: - helpers
 private extension RHNetworkAPITests_EndToEndTests {
     var baseURL: URL { .init(string: "https://pokeapi.co/api/v2")! }
-    var path: String { "pokemon-color/1" }
+    var path: String { "pokemon-color/black" }
 
     func getPikachuData(file: StaticString=#file, line: UInt=#line) -> Data? {
         let factory = RHNetworkAPIImplementationFactory()
