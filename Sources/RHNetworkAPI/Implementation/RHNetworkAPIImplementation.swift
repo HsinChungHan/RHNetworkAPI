@@ -20,13 +20,15 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
     }
     
     private struct Request: RequestType {
+        var queryItems: [URLQueryItem]
         var baseURL: URL
         var path: String
         var method: RHNetwork.HTTPMethod
         var body: Data?
         var headers: [String : String]?
-        init(baseURL: URL, path: String, method: RHNetwork.HTTPMethod, body: Data? = nil, headers: [String : String]? = nil) {
+        init(baseURL: URL, path: String, method: RHNetwork.HTTPMethod, queryItems:[URLQueryItem]=[], body: Data? = nil, headers: [String : String]? = nil) {
             self.baseURL = baseURL
+            self.queryItems = queryItems
             self.path = path
             self.method = method
             self.body = body
@@ -34,8 +36,8 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
         }
     }
     
-    func get(path: String, completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
-        let request = Request(baseURL: domain, path: path, method: .get)
+    func get(path: String, queryItems:[URLQueryItem], completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
+        let request = Request(baseURL: domain, path: path, method: .get, queryItems: queryItems)
         client.request(with: request, completion: completion)
     }
     

@@ -32,7 +32,7 @@ private extension RHNetworkAPITests_EndToEndTests {
         let networkAPI = factory.makeRHNetworkAPI(with: baseURL)
         var receivedData: Data?
         let exp = expectation(description: "wait for the response ...")
-        networkAPI.get(path: path) { result in
+        networkAPI.get(path: path, queryItems: []) { result in
             switch result {
             case let .success(data, _):
                 receivedData = data
