@@ -7,5 +7,6 @@
 
 import Foundation
 public protocol RHNetworkAPIImplementationFactoryProtocol {
-    func makeRHNetworkAPI(with domain: URL) -> RHNetworkAPIProtocol
+    func makeRHNetworkAPIImplementation(with domain: URL) -> RHNetworkAPIProtocol
+    func makeNonCacheRHNetworkAPIImplementation(with domain: URL) -> RHNetworkAPIProtocol
 }
