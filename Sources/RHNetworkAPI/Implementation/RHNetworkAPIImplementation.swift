@@ -13,9 +13,11 @@ enum RequestError: Error {
 
 class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
     let domain: URL
+    var headers: [String : String]?
     let client: HTTPClient
-    init(domain: URL, client: HTTPClient=URLSessionHTTPClient()) {
+    init(domain: URL, headers: [String : String]? = nil, client: HTTPClient=URLSessionHTTPClient()) {
         self.domain = domain
+        self.headers = headers
         self.client = client
     }
     
@@ -37,22 +39,26 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
     }
     
     func get(path: String, queryItems:[URLQueryItem], completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
-        let request = Request(baseURL: domain, path: path, method: .get, queryItems: queryItems)
+        let request = Request(baseURL: domain, path: path, method: .get, queryItems: queryItems, headers: headers)
         client.request(with: request, completion: completion)
     }
     
     func post(path: String, body: [String: String]?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
-        var request: RequestType
-        if body != nil {
-            guard let data = try? JSONSerialization.data(withJSONObject: body!, options: []) else {
-                completion(.failure(.jsonToDataError))
-                return
-            }
-            request = Request(baseURL: domain, path: path, method: .post, body: data)
-        } else {
-            request = Request(baseURL: domain, path: path, method: .post, body: nil)
+        guard let body else {
+            let request = Request(baseURL: domain, path: path, method: .post)
+            client.request(with: request, completion: completion)
+            return
         }
-        client.request(with: request, completion: completion)
+        
+        do {
+            let data = try JSONSerialization.data(withJSONObject: body, options: [])
+            let request = Request(baseURL: domain, path: path, method: .post, body: data)
+            client.request(with: request, completion: completion)
+            return
+        } catch {
+            completion(.failure(.jsonToDataError))
+            return
+        }
     }
     
     func download(path: String, completion: @escaping (HTTPClientResult) -> Void) {
