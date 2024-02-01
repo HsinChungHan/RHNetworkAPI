@@ -60,9 +60,4 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
             return
         }
     }
-    
-    func download(path: String, completion: @escaping (HTTPClientResult) -> Void) {
-        let request = Request(baseURL: domain, path: path, method: .download)
-        client.request(with: request, completion: completion)
-    }
 }
