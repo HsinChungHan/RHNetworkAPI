@@ -80,7 +80,7 @@ private extension RHNetworkAPIImplementationTests {
 private extension RHNetworkAPIImplementationTests {
     func expectGet(_ sut: RHNetworkAPIImplementation, client: HTTPClientSpy, toCompleteWithResult expectedResult: HTTPClientResult, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         let exp = expectation(description: "Wait for completion ...")
-        sut.get(path: anyPath) { result in
+        sut.get(path: anyPath, queryItems: []) { result in
             switch (result, expectedResult) {
             case let (.success(data, response), .success(expectedData, expectedResponse)):
                 XCTAssertEqual(data, expectedData)
