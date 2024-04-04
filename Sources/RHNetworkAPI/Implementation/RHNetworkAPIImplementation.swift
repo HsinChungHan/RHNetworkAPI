@@ -12,10 +12,12 @@ enum RequestError: Error {
 }
 
 class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
+    var didUploadDataTaskWithProgress: ((_ totalBytesExpectedToSend: Int64 , _ progress: Float) -> Void)? = nil
+    
     let domain: URL
     var headers: [String : String]?
-    let client: HTTPClient
-    init(domain: URL, headers: [String : String]? = nil, client: HTTPClient=URLSessionHTTPClient()) {
+    private var client: HTTPClient
+    init(domain: URL, headers: [String : String]? = nil, client: HTTPClient=URLSessionHTTPClient(uploadDataTaskWithProgress: UrlsessionDataTaskWithProgress())) {
         self.domain = domain
         self.headers = headers
         self.client = client
@@ -59,5 +61,11 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
             completion(.failure(.jsonToDataError))
             return
         }
+    }
+    
+    func uploadDataTask(path: String, from data: Data?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
+        let request = Request(baseURL: domain, path: path, method: .post)
+        client.uploadDataTaskWithProgress(with: request, from: data, completion: completion)
+        self.didUploadDataTaskWithProgress = client.didUploadDataTaskWithProgress
     }
 }
