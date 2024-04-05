@@ -12,8 +12,6 @@ enum RequestError: Error {
 }
 
 class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
-    var didUploadDataTaskWithProgress: ((_ totalBytesExpectedToSend: Int64 , _ progress: Float) -> Void)? = nil
-    
     let domain: URL
     var headers: [String : String]?
     private var client: HTTPClient
@@ -63,9 +61,10 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
         }
     }
     
-    func uploadDataTask(path: String, from data: Data?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
+    func uploadDataTask(path: String, from data: Data?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void, progressAction: ((Float) -> Void)? = nil) {
         let request = Request(baseURL: domain, path: path, method: .post)
+        guard let progressAction else { return }
+        client.registerProgressUpdate(for: request.fullURL.absoluteString, with: progressAction)
         client.uploadDataTaskWithProgress(with: request, from: data, completion: completion)
-        self.didUploadDataTaskWithProgress = client.didUploadDataTaskWithProgress
     }
 }
