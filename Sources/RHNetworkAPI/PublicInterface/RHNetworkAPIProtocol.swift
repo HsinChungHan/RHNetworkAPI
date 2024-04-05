@@ -15,6 +15,6 @@ public protocol RHNetworkAPIProtocol {
     func get(with request: Request, completion: @escaping (RHNetwork.HTTPClientResult) -> Void)
     func post(path: String, body: [String:String]?, completion: @escaping (HTTPClientResult) -> Void) throws
     func post(with request: Request, completion: @escaping (RHNetwork.HTTPClientResult) -> Void)
-    func uploadDataTask(path: String, from data: Data?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void, progressAction: ((Float) -> Void)?)
-    func uploadDataTask(with request: Request, from data: Data?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void, progressAction: ((Float) -> Void)?)
+    func uploadDataTask(path: String, from data: Data?, taskID: String?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void, progressAction: ((Float) -> Void)?)
+    func uploadDataTask(with request: Request, from data: Data?, taskID: String?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void, progressAction: ((Float) -> Void)?)
 }
