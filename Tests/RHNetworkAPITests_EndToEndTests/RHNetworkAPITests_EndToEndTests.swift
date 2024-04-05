@@ -29,7 +29,7 @@ private extension RHNetworkAPITests_EndToEndTests {
 
     func getPikachuData(file: StaticString=#file, line: UInt=#line) -> Data? {
         let factory = RHNetworkAPIImplementationFactory()
-        let networkAPI = factory.makeCacheClient(with: baseURL)
+        let networkAPI = factory.makeCacheAndNoneUploadProgressClient(with: baseURL)
         var receivedData: Data?
         let exp = expectation(description: "wait for the response ...")
         networkAPI.get(path: path, queryItems: []) { result in

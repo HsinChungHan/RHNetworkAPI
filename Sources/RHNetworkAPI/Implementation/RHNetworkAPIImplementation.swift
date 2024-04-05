@@ -32,13 +32,11 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
     let domain: URL
     var headers: [String : String]?
     private var client: HTTPClient
-    init(domain: URL, headers: [String : String]? = nil, client: HTTPClient=URLSessionHTTPClient(uploadDataTaskWithProgress: UrlsessionDataTaskWithProgress())) {
+    init(domain: URL, headers: [String : String]? = nil, client: HTTPClient=URLSessionHTTPClient(configuration: .ephemeral, uploadDataTaskWithProgress: UrlsessionDataTaskWithProgress())) {
         self.domain = domain
         self.headers = headers
         self.client = client
     }
-    
-    
     
     func get(path: String, queryItems:[URLQueryItem], completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
         let request = Request(baseURL: domain, path: path, method: .get, queryItems: queryItems, headers: headers)
