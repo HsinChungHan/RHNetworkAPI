@@ -11,6 +11,23 @@ enum RequestError: Error {
     case failedToTransferJsonToData
 }
 
+public struct Request: RequestType {
+    public var queryItems: [URLQueryItem]
+    public var baseURL: URL
+    public var path: String
+    public var method: RHNetwork.HTTPMethod
+    public var body: Data?
+    public var headers: [String : String]?
+    public init(baseURL: URL, path: String, method: RHNetwork.HTTPMethod, queryItems:[URLQueryItem]=[], body: Data? = nil, headers: [String : String]? = nil) {
+        self.baseURL = baseURL
+        self.queryItems = queryItems
+        self.path = path
+        self.method = method
+        self.body = body
+        self.headers = headers
+    }
+}
+
 class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
     let domain: URL
     var headers: [String : String]?
@@ -21,25 +38,14 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
         self.client = client
     }
     
-    private struct Request: RequestType {
-        var queryItems: [URLQueryItem]
-        var baseURL: URL
-        var path: String
-        var method: RHNetwork.HTTPMethod
-        var body: Data?
-        var headers: [String : String]?
-        init(baseURL: URL, path: String, method: RHNetwork.HTTPMethod, queryItems:[URLQueryItem]=[], body: Data? = nil, headers: [String : String]? = nil) {
-            self.baseURL = baseURL
-            self.queryItems = queryItems
-            self.path = path
-            self.method = method
-            self.body = body
-            self.headers = headers
-        }
-    }
+    
     
     func get(path: String, queryItems:[URLQueryItem], completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
         let request = Request(baseURL: domain, path: path, method: .get, queryItems: queryItems, headers: headers)
+        client.request(with: request, completion: completion)
+    }
+    
+    func get(with request: Request, completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
         client.request(with: request, completion: completion)
     }
     
@@ -61,8 +67,18 @@ class RHNetworkAPIImplementation: RHNetworkAPIProtocol {
         }
     }
     
+    func post(with request: Request, completion: @escaping (RHNetwork.HTTPClientResult) -> Void) {
+        client.request(with: request, completion: completion)
+    }
+    
     func uploadDataTask(path: String, from data: Data?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void, progressAction: ((Float) -> Void)? = nil) {
         let request = Request(baseURL: domain, path: path, method: .post)
+        guard let progressAction else { return }
+        client.registerProgressUpdate(for: request.fullURL.absoluteString, with: progressAction)
+        client.uploadDataTaskWithProgress(with: request, from: data, completion: completion)
+    }
+    
+    func uploadDataTask(with request: Request, from data: Data?, completion: @escaping (RHNetwork.HTTPClientResult) -> Void, progressAction: ((Float) -> Void)? = nil) {
         guard let progressAction else { return }
         client.registerProgressUpdate(for: request.fullURL.absoluteString, with: progressAction)
         client.uploadDataTaskWithProgress(with: request, from: data, completion: completion)
